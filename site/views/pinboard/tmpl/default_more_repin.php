@@ -39,7 +39,6 @@ defined("_JEXEC") or die;
     <div class="tz_repin_more_warp_form_div">
         <select id="tz_repin_select" name="tz_repin_select">
             <?php
-
             if (isset($this->Showboardd) && !empty($this->Showboardd)) :
                 foreach ($this->Showboardd as $board_s) :
                     ?>

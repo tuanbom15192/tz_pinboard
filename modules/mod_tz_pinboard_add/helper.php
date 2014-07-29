@@ -17,26 +17,29 @@
 # Technical Support:  Forum - http://templaza.com/Forum
 
 -------------------------------------------------------------------------*/
-    defined('_JEXEC') or die;
-    class modTz_Pinboard_add{
+defined('_JEXEC') or die;
+class modTz_Pinboard_add
+{
 
-        public static function getBoard(){   // show board
-                      $user = JFactory::getUser();
-                      $id = $user->id;
-                      $db = JFactory::getDbo();
-                      $sqk = " select id, title from #__tz_pinboard_boards where created_user_id=$id";
-                      $db->setQuery($sqk);
-                      $row = $db->loadObjectList();
-                      return $row;
-                }
-        public static function getCheckuser(){
-                     $user = JFactory::getUser();
-                     $id = $user->id;
-                     return $id;
-                }
-
+    public static function getBoard()
+    { // show board
+        $user = JFactory::getUser();
+        $id = $user->id;
+        $db = JFactory::getDbo();
+        $sqk = " select id, title from #__tz_pinboard_boards where created_user_id=$id and state =1";
+        $db->setQuery($sqk);
+        $row = $db->loadObjectList();
+        return $row;
     }
 
+    public static function getCheckuser()
+    {
+        $user = JFactory::getUser();
+        $id = $user->id;
+        return $id;
+    }
+
+}
 
 
 ?>

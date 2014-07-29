@@ -119,7 +119,9 @@ class Tz_pinboardModelAddpinboards extends JModelList
     function  getChecktag()
     {
         $keywords = strip_tags(htmlspecialchars($_POST['keywords_pin_local']));
+
         if (empty($keywords)) return $keywords = array();
+
         $keywords = trim($keywords);
         $keywords = mb_strtolower($keywords);
         $arr_key = array(',', '\'', '"', '.', '?', '/', '\\', '<', '>', '(', ')', '*', '&', '^', '%', '$', '#', '@', '!', '-', '+', '|', '`', '~');
@@ -133,18 +135,24 @@ class Tz_pinboardModelAddpinboards extends JModelList
                 $arr[] = $keywords[$i];
             }
         }
+
         $db = JFactory::getDbo();
         $newkey = array();
         for ($i = 0; $i < count($arr); $i++) { // get tag name and id
             $sql = "select id from #__tz_pinboard_tags where name='" . trim($arr[$i]) . "'";
             $db->setQuery($sql);
             $row = $db->loadResult();
+
             if (empty($row)) {
                 $key[] = $arr[$i];
+                $row_id = '';
             } else {
                 $row_id[] = $row;
+                $key = '';
             }
+
         }
+
         $newkey['new'] = $key;
         $newkey['id'] = $row_id;
         return $newkey;
@@ -217,6 +225,7 @@ class Tz_pinboardModelAddpinboards extends JModelList
     function insertImg($id_content, $path_img)
     {
         $video = strip_tags(htmlspecialchars(JRequest::getString('video_hidden')));
+        $url = '';
         if (!empty($video)) {
             $referer = parse_url($video);
             $url_return = $referer['scheme'] . '://' . $referer['host'];
@@ -299,7 +308,6 @@ class Tz_pinboardModelAddpinboards extends JModelList
                     if (preg_match('/<title>(.*?)<\/title>/i', $contentURL->body, $match)) { // get title
                         $title_url = str_replace($check_text, '', $match[1]);
                         $content['title'] = $this->length_character($title_url, $this->getState('max_text_title'));
-
                     }
                 }
                 if (preg_match('/<meta.*?name="description".*?\/>/i', $contentURL->body, $match)) { // get description
@@ -329,7 +337,6 @@ class Tz_pinboardModelAddpinboards extends JModelList
                 $slash = strrpos($link_url, '/') + 1;
                 $link_url = substr($link_url, 0, $slash);
                 $content['url2'] = $link_url;
-
 
                 if (preg_match('/<meta\s*?property="og:image".*?content="(.*?)">/i', $contentURL->body, $match_img)) { // get img meta
                     $aar_icon = array();
@@ -456,13 +463,16 @@ class Tz_pinboardModelAddpinboards extends JModelList
     function UploadImgUrl()
     {
         $file = JRequest::getString('img_hidde');
+
         $tzFolderPath = JPATH_ROOT . DIRECTORY_SEPARATOR . 'media' . DIRECTORY_SEPARATOR . 'tz_pinboard' . DIRECTORY_SEPARATOR . 'article' . DIRECTORY_SEPARATOR . 'cache';
         if (!JFolder::exists($tzFolderPath)) {
             JFolder::create($tzFolderPath);
         }
-        if (empty($file)) return null;
+
+        if (empty($file) or !$file) return null;
         require_once(JPATH_COMPONENT . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'HTTPFetcher.php');
         require_once(JPATH_COMPONENT . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'readfile.php');
+
         $image = new Services_Yadis_PlainHTTPFetcher();
         $image = $image->get($file);
 
@@ -527,6 +537,7 @@ class Tz_pinboardModelAddpinboards extends JModelList
         JRequest::checkToken() or jexit('Invalid Token');
         $SendMial = $this->getState('sendMail');
         $path_img = $this->UploadImgUrl();
+        if ($path_img == null) return 'not_image';
         if ($path_img == false) return false;
         $id_content = $this->InsertContent()->id;
         if (isset($id_content) && !empty($id_content)) {
@@ -579,8 +590,6 @@ class Tz_pinboardModelAddpinboards extends JModelList
         if (!JFolder::exists($tzFolderPath)) {
             JFolder::create($tzFolderPath);
         }
-
-
         $check_file_type = in_array(strtolower($img['type']), $arr);
         if ($check_file_type == false) {
             $erro[] = "incorrect file type";
@@ -672,9 +681,54 @@ class Tz_pinboardModelAddpinboards extends JModelList
         return $row;
     }
 
+    function checkAlias_on_pin($name_board, $alias_board)
+    {
+        $user = JFactory::getUser();
+        $created_user_id = $user->id;
+        $name = $name_board;
+        $alias = $alias_board;
+        if (isset($alias) && !empty($alias)) {
+            $check = 'WHERE ( title="' . $name . '" OR alias="' . $alias . '" ) AND created_user_id=' . $created_user_id . '';
+        } else {
+            $check = 'WHERE title="' . $name . '" AND  created_user_id=' . $created_user_id . '';
+        }
+        $db = JFactory::getDbo();
+        $sql = 'select title, alias from #__tz_pinboard_boards ' . $check . '';
+        $db->setQuery($sql);
+        $num_row = $db->query();
+        $row = $db->getAffectedRows($num_row);
+        return $row;
+    }
+
+    function InsertCategory_on_pin()
+    {
+        $user = JFactory::getUser();
+        $dt = JFactory::getDate();
+        $state_b = $this->getState('state_boar');
+        $title = strip_tags(htmlspecialchars($_POST['name_board']));
+        $alias = JApplication::stringURLSafe($title);
+        $created_time = $dt->toSql();
+        $catid = $_POST['name_category'];
+        $created_user_id = $user->id;
+        $erro = $this->checkAlias_on_pin($title, $alias);
+        $db = JFactory::getDbo();
+        if ($erro == "0" && isset($created_user_id) && !empty($created_user_id)) {
+
+            $sql = 'INSERT INTO #__tz_pinboard_boards
+                                    VALUES(NULL,"' . $title . '","' . $alias . '","null","' . $state_b . '","' . $created_time . '","","' . $catid . '","' . $created_user_id . '")';
+            $db->setQuery($sql);
+            $db->query();
+        }
+
+        $query = 'select  * from #__tz_pinboard_boards where state= 1 and created_user_id =' . $created_user_id . ' order by id desc';
+        $db->setQuery($query);
+        $row = $db->loadObject();
+        echo json_encode($row);
+
+    }
+
     function  InsertCategory()
     {
-        JRequest::checkToken() or jexit('Invalid Token');
         $user = JFactory::getUser();
         $dt = JFactory::getDate();
         $state_b = $this->getState('state_boar');

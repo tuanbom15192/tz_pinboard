@@ -44,55 +44,6 @@ class TZ_PinboardControllerArticle extends JControllerForm
         parent::__construct($config);
     }
 
-    function website()
-    {
-        $task = JRequest::getString('task');
-        $model = $this->getModel('Article');
-        $data = $model->ajaxUrlImg();
-        echo $data;
-        die();
-    }
-
-    public function extrafields()
-    {
-        $model = $this->getModel('Article', 'TZ_PinboardModel');
-        $data = $model->extrafields();
-        echo $data;
-        die();
-    }
-
-    function deleteAttachment()
-    {
-        $model = $this->getModel('Article');
-        $model->deleteAttachment();
-        //echo $data;
-        die();
-    }
-
-    function selectgroup()
-    {
-        $model = $this->getModel('Article');
-        $data = $model->selectgroup();
-        echo $data;
-        die();
-    }
-
-    function getThumb()
-    {
-        $model = $this->getModel('Article');
-        $data = $model->getThumb();
-        echo $data;
-        die();
-    }
-
-    function  listsfields()
-    {
-        $model = $this->getModel('Article');
-        $data = $model->listsfields();
-        echo $data;
-        die();
-    }
-
     /**
      * Method override to check if you can add a new record.
      *

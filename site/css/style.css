@@ -1,0 +1,85 @@
+@font-face {
+    font-family: 'tz_pin';
+    src: url('icon_font/tz_pin.eot?zf2ki9');
+    src: url('icon_font/tz_pin.eot?#iefixzf2ki9') format('embedded-opentype'), url('icon_font/tz_pin.woff?zf2ki9') format('woff'), url('icon_font/tz_pin.ttf?zf2ki9') format('truetype'), url('icon_font/tz_pin.svg?zf2ki9#tz_pin') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+[class^="tz-pin-"], [class*=" tz-pin-"] {
+    font-family: 'tz_pin';
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+
+    /* Better Font Rendering =========== */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.tz-pin-stack:before {
+    content: "\e604";
+}
+
+.tz-pin-th-small:before {
+    content: "\e605";
+}
+
+.tz-pin-th-large-outline:before {
+    content: "\e606";
+}
+
+.tz-pin-th-small-outline:before {
+    content: "\e607";
+}
+
+.tz-pin-messages:before {
+    content: "\e608";
+}
+
+.tz-pin-pencil:before {
+    content: "\e601";
+}
+
+.tz-pin-search:before {
+    content: "\e60c";
+}
+
+.tz-pin-cross:before {
+    content: "\e609";
+}
+
+.tz-pin-plus2:before {
+    content: "\e60a";
+}
+
+.tz-pin-docs:before {
+    content: "\e613";
+}
+
+.tz-pin-arrow-left:before {
+    content: "\e602";
+}
+
+.tz-pin-uniE603:before {
+    content: "\e603";
+}
+
+.tz-pin-pushpin:before {
+    content: "\e60b";
+}
+
+.tz-pin-globe:before {
+    content: "\e600";
+}
+
+.tz-pin-heart:before {
+    content: "\e6d6";
+}
+
+.tz-pin-arrow-up:before {
+    content: "\e724";
+}

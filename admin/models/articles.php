@@ -81,7 +81,6 @@ class TZ_PinboardModelArticles extends JModelList
             $this->context .= '.' . $layout;
         }
 
-//        var_dump($this->getName(),$this -> context,$layout); die();
 
         $group = $this->getUserStateFromRequest($this->context . '.group', 'filter_group', 0, 'int');
         $this->setState('filter.group', $group);

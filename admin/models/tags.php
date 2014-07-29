@@ -196,23 +196,36 @@ class TZ_PinboardModelTags extends JModelLegacy
         return true;
     }
 
-    function checkTags($name = null)
+    function checkTags($name = null, $id = null)
     {
         $name = trim($name);
         if (!empty($name)) {
             $name = strtolower($name);
             $query = 'SELECT COUNT(*) FROM #__tz_pinboard_tags'
-                . ' WHERE name="' . $name . '"';
+                . ' WHERE name="' . $name . '" AND  id="' . $id . '"';
             $db = JFactory::getDbo();
             $db->setQuery($query);
             if (!$db->query()) {
                 $this->setError($db->getErrorMsg());
                 return false;
             }
+
             $total = $db->loadResult();
-            if ($total > 0) {
-                $this->setError(JText::_('COM_TZ_PINBOARD_TAG_EXISTS_ALREADY'));
-                return false;
+            if ($total == 1) {
+                return true;
+            } else {
+                $j = 'SELECT COUNT(*) FROM #__tz_pinboard_tags'
+                    . ' WHERE name="' . $name . '"';
+                $db->setQuery($j);
+                if (!$db->query()) {
+                    $this->setError($db->getErrorMsg());
+                    return false;
+                }
+                $total_j = $db->loadResult();
+                if ($total_j > 1) {
+                    $this->setError(JText::_('COM_TZ_PINBOARD_TAG_EXISTS_ALREADY'));
+                    return false;
+                }
             }
             return true;
         }
@@ -236,7 +249,7 @@ class TZ_PinboardModelTags extends JModelLegacy
 
         $post['published'] = $post['published'] == 'P' ? 1 : 0;
 
-        if (!$this->checkTags($post['name'])) {
+        if (!$this->checkTags($post['name'], $post['id'])) {
             $this->_link = $this->_link . '&task=add';
             return false;
         }

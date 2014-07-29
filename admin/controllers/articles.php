@@ -74,19 +74,29 @@ class TZ_PinboardControllerArticles extends JControllerAdmin
 
             // Make sure the item ids are integers
             JArrayHelper::toInteger($cid);
-
+            if (count($cid) <= 1) {
+                $text_publish = '_N_PIN_PUBLISHED';
+                $text_unpublish = '_N_PIN_UNPUBLISHED';
+                $text_archived = '_N_PIN_ARCHIVED';
+                $text_trashed = '_N_PIN_TRASHED';
+            } else {
+                $text_publish = '_N_PINS_PUBLISHED';
+                $text_unpublish = '_N_PINS_UNPUBLISHED';
+                $text_archived = '_N_PINS_ARCHIVED';
+                $text_trashed = '_N_PINS_TRASHED';
+            }
             // Publish the items.
             if (!$model->publish($cid, $value)) {
                 JError::raiseWarning(500, $model->getError());
             } else {
                 if ($value == 1) {
-                    $ntext = $this->text_prefix . '_ARTICLE_N_ITEMS_PUBLISHED';
+                    $ntext = $this->text_prefix . $text_publish;
                 } elseif ($value == 0) {
-                    $ntext = $this->text_prefix . '_ARTICLE_N_ITEMS_UNPUBLISHED';
+                    $ntext = $this->text_prefix . $text_unpublish;
                 } elseif ($value == 2) {
-                    $ntext = $this->text_prefix . '_ARTICLE_N_ITEMS_ARCHIVED';
+                    $ntext = $this->text_prefix . $text_archived;
                 } else {
-                    $ntext = $this->text_prefix . '_ARTICLE_N_ITEMS_TRASHED';
+                    $ntext = $this->text_prefix . $text_trashed;
                 }
                 $this->setMessage(JText::plural($ntext, count($cid)));
             }
@@ -94,6 +104,40 @@ class TZ_PinboardControllerArticles extends JControllerAdmin
         $extension = JRequest::getCmd('extension');
         $extensionURL = ($extension) ? '&extension=' . JRequest::getCmd('extension') : '';
         $this->setRedirect(JRoute::_('index.php?option=' . $this->option . '&view=' . $this->view_list . $extensionURL, false));
+    }
+
+    public function delete()
+    {
+        // Check for request forgeries
+        JSession::checkToken() or die(JText::_('JINVALID_TOKEN'));
+
+        // Get items to remove from the request.
+        $cid = JFactory::getApplication()->input->get('cid', array(), 'array');
+
+        if (!is_array($cid) || count($cid) < 1) {
+            JLog::add(JText::_($this->text_prefix . '_NO_ITEM_SELECTED'), JLog::WARNING, 'jerror');
+        } else {
+            // Get the model.
+            $model = $this->getModel();
+
+            // Make sure the item ids are integers
+            jimport('joomla.utilities.arrayhelper');
+            JArrayHelper::toInteger($cid);
+            if (count($cid) <= 1) {
+                $text = '_N_PIN_DELETED';
+            } else {
+                $text = '_N_PINS_DELETED';
+            }
+            // Remove the items.
+            if ($model->delete($cid)) {
+                $this->setMessage(JText::plural($this->text_prefix . $text, count($cid)));
+            } else {
+                $this->setMessage($model->getError());
+            }
+        }
+        // Invoke the postDelete method to allow for the child class to access the model.
+
+        $this->setRedirect(JRoute::_('index.php?option=' . $this->option . '&view=' . $this->view_list, false));
     }
 
     /*

@@ -17,33 +17,28 @@
 
 -------------------------------------------------------------------------*/
 defined('_JEXEC') or die;
-require_once JPATH_COMPONENT.DIRECTORY_SEPARATOR.'helpers'.DIRECTORY_SEPARATOR.'route.php';
-        $option = JRequest::getCmd('option');
-        $view =JRequest::getCmd('view','manageruser');
-        $controllerName = $view;
-        $controlletPath=JPATH_COMPONENT.DIRECTORY_SEPARATOR.'controllers'.DIRECTORY_SEPARATOR.$controllerName.'.php';
+require_once JPATH_COMPONENT . DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . 'route.php';
+$option = JRequest::getCmd('option');
+$view = JRequest::getCmd('view', 'manageruser');
+$controllerName = $view;
+$controlletPath = JPATH_COMPONENT . DIRECTORY_SEPARATOR . 'controllers' . DIRECTORY_SEPARATOR . $controllerName . '.php';
+if (file_exists($controlletPath)) {
+    require_once($controlletPath);
+} else {
+    echo JError::raiseError(500, 'Invailid controller');;
+}
 
+$controllerClass = 'Tz_pinboardController' . ucfirst($controllerName);
+$doc = JFactory::getDocument();
+$doc->addStyleSheet(JUri::base() . 'components/com_tz_pinboard/css/style.css');
 
+if (class_exists($controllerClass))
+    $controller = new $controllerClass;
+else
+    echo JError::raiseError(500, 'Invailid Class controller!');
 
+jimport('joomla.filesystem.file');
 
-
-        if(file_exists($controlletPath)){
-            require_once($controlletPath);
-        }
-        else{
-            echo JError::raiseError(500,'Invailid controller');;
-        }
-
-        $controllerClass='Tz_pinboardController'.ucfirst($controllerName);
-
-
-        if(class_exists($controllerClass))
-                $controller=new $controllerClass;
-            else
-                echo JError::raiseError(500,'Invailid Class controller!');
-
-        jimport('joomla.filesystem.file');
-
-        $controller->execute(JRequest::getCmd('task')); // chay task
-        $controller->redirect(); // chen file controler vao
+$controller->execute(JRequest::getCmd('task')); // chay task
+$controller->redirect(); // chen file controler vao
 ?>

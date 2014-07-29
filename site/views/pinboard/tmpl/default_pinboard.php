@@ -21,41 +21,35 @@ defined("_JEXEC") or die;
 if (isset($this->Pins)) {
     foreach ($this->Pins as $Pins) {
         ?>
-
         <div class="tz_pin_all_content">
         <div class="thumbnail tz_pin_content_class">
-            <?php
-            if (isset($Pins->c_state) && $Pins->c_state == 0) {
+        <?php if (isset($Pins->c_state) && $Pins->c_state == 0) { ?>
+            <p class="tz-pinboard-warning">
+                <?php echo JText::_('COM_TZ_PINBOARD_NOT_YET_APPROVED'); ?>
+            </p>
+            <p class="tz-pinboard-approver tz-approver" data-option-id="<?php echo $Pins->content_id; ?>">
+                <?php echo JText::_('COM_TZ_PINBOARD_CHECK_APPROVED') ?>
+            </p>
+        <?php } ?>
+        <?php if (isset($Pins->c_attribs) && !empty($Pins->c_attribs)) { ?>
+            <p class="tz-detail-price2">
+                <?php
+                $price = new JRegistry($Pins->c_attribs);
+                echo $price->get('price');
                 ?>
-                <p class="tz-pinboard-warning">
-                    <?php echo JText::_('COM_TZ_PINBOARD_NOT_YET_APPROVED'); ?>
-                </p>
-                <p class="tz-pinboard-approver tz-approver" data-option-id="<?php echo $Pins->content_id; ?>">
-                    <?php echo JText::_('COM_TZ_PINBOARD_CHECK_APPROVED') ?>
-                </p>
-            <?php
-            }
-            ?>
-            <?php if (isset($Pins->c_attribs) && !empty($Pins->c_attribs)) { ?>
-                <p class="tz-detail-price2">
-                    <?php
-                    $price = new JRegistry($Pins->c_attribs);
-                    echo $price->get('price');
-                    ?>
-                </p>
-            <?php } ?>
-            <?php
-            $img_size = $this->img_size;
-            $img_type = JFile::getExt($Pins->poro_img);
+            </p>
+        <?php } ?>
+        <?php
+        $img_size = $this->img_size;
+        $img_type = JFile::getExt($Pins->poro_img);
 
-            if ($img_type == 'gif') {
-                $img_type_replaca = $Pins->poro_img;
-            } else {
-                $img_type_replaca = str_replace(".$img_type", "_$img_size.$img_type", $Pins->poro_img);
-            }
-            ?>
-            <div class="tz_hover_img"
-            ">
+        if ($img_type == 'gif') {
+            $img_type_replaca = $Pins->poro_img;
+        } else {
+            $img_type_replaca = str_replace(".$img_type", "_$img_size.$img_type", $Pins->poro_img);
+        }
+        ?>
+        <div class="tz_hover_img">
             <a class="tz_a_center" <?php if ($this->type_detail == '0') { ?> href="<?php echo JRoute::_(TZ_PinboardHelperRoute::getPinboardDetailRoute($Pins->content_id)); ?>" <?php } ?>
                rel="nofollow">
                 <img
@@ -190,8 +184,6 @@ if (isset($this->Pins)) {
                 <div class="cler"></div>
             </div>
         <?php } ?>
-
-
         <div class="tz_pin_comsPins">
             <?php if (isset($this->s_thumb) && $this->s_thumb == 1) { ?>
                 <div class="tz_pin_comsPins_content">

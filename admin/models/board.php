@@ -27,18 +27,14 @@ class TZ_PinboardModelBoard extends JModelList
             $this->context .= '.' . $layout;
         }
         $filer_auto = $this->getUserStateFromRequest($this->context . '.filter.author.id', 'filter_author_id', '');
-
         $filer_search = $this->getUserStateFromRequest($this->context . '.filler.search', 'filter_search', '');
-
         $filert_order = $this->getUserStateFromRequest($this->context . '.filter.order', 'filter_order', '');
         $filert_order_dir = $this->getUserStateFromRequest($this->context . '.filert.order.dir', 'filter_order_Dir', '');
         $limit = $this->getUserStateFromRequest($this->context . 'limit', 'limit', '');
         $limitstartt = $this->getUserStateFromRequest($this->context . 'limitstart', 'limitstart', '');
         $filter_published = $this->getUserStateFromRequest($this->context . 'filter_published', 'filter_published', '');
-
         $id_cm = $this->getUserStateFromRequest($this->context . '.id_cm', 'id', '');
         $this->setState('status', $filter_published);
-
         $this->setState('id_cm', $id_cm);
         // $this->setState('autho',$filer_auto);
         $this->setState('lab1', $filert_order);
@@ -66,7 +62,6 @@ class TZ_PinboardModelBoard extends JModelList
         $limit = $this->getState('limi', 5);
         $limitstart = $this->getState('limitstar', 0);
         $author = $this->getState('autho');
-
         $search = $this->getState('search');
         $status = $this->setState('status');
 

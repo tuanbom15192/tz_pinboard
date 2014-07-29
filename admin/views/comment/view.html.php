@@ -61,7 +61,6 @@ class TZ_PinboardViewComment extends JViewLegacy
         JToolbarHelper::unpublishList();
         JToolbarHelper::deleteList('COM_TZ_PINBOARD_COMMENT_MORE_DELETE');
         JToolBarHelper::preferences('com_tz_pinboard');
-        JToolbarHelper::cancel();
         JHtmlSidebar::addFilter(
             JText::_('JOPTION_SELECT_AUTHOR'),
             'filter_author_id',

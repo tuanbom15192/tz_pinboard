@@ -25,7 +25,7 @@ jimport('joomla.filesystem.folder');
 
 require_once(JPATH_ADMINISTRATOR . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'com_tz_pinboard' . DIRECTORY_SEPARATOR . 'tables' . DIRECTORY_SEPARATOR . 'pins.php');
 require_once JPATH_COMPONENT_ADMINISTRATOR . '/helpers/content.php';
-require_once (JPATH_LIBRARIES. '/joomla/filesystem/file.php');
+require_once(JPATH_LIBRARIES . '/joomla/filesystem/file.php');
 define('TZ_IMAGE_SIZE', 10 * 1024 * 1024);
 
 /**
@@ -493,19 +493,21 @@ class TZ_PinboardModelArticle extends JModelAdmin
                     return false;
                 }
                 $rows = $db->loadObject();
-                if (preg_match('/.*\/\/\/.*/i', $rows->attachfiles, $match)) {
-                    $attachFiles = explode('///', $rows->attachfiles);
+                if (!empty($rows->attachfiles)) {
+                    if (preg_match('/.*\/\/\/.*/i', $rows->attachfiles, $match)) {
+                        $attachFiles = explode('///', $rows->attachfiles);
 
-                    foreach ($attachFiles as $item) {
-                        $filePath = JPATH_SITE . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR . $item;
+                        foreach ($attachFiles as $item) {
+                            $filePath = JPATH_SITE . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR . $item;
+                            if (JFile::exists($filePath)) {
+                                JFile::delete($filePath);
+                            }
+                        }
+                    } else {
+                        $filePath = JPATH_SITE . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR . $rows->attachfiles;
                         if (JFile::exists($filePath)) {
                             JFile::delete($filePath);
                         }
-                    }
-                } else {
-                    $filePath = JPATH_SITE . DIRECTORY_SEPARATOR . $folder . DIRECTORY_SEPARATOR . $rows->attachfiles;
-                    if (JFile::exists($filePath)) {
-                        JFile::delete($filePath);
                     }
                 }
             }
@@ -513,102 +515,6 @@ class TZ_PinboardModelArticle extends JModelAdmin
         return true;
     }
 
-    function getFieldsContent()
-    {
-        $data = new stdClass();
-        if ($this->contentid) {
-            $query = 'SELECT * FROM #__tz_pinboard_xref_content'
-                . ' WHERE contentid = ' . $this->contentid;
-
-            $db = JFactory::getDbo();
-            $db->setQuery($query);
-            if (!$db->query()) {
-                $this->setError($db->getErrorMsg());
-                return false;
-            }
-
-            if ($row = $db->loadObject()) {
-                $data->images = $row->images;
-                $data->imagetitle = $row->imagetitle;
-                $data->images_hover = $row->images_hover;
-
-                if (preg_match('/.*\/\/\/.*/i', $row->gallery, $match)) {
-                    $gallery = explode('///', $row->gallery);
-                    $gallerytitle = explode('///', $row->gallerytitle);
-                    if ($gallery) {
-                        foreach ($gallery as $i => $item) {
-                            if (!isset($gallerytitle[$i])) {
-                                $gallerytitle[$i] = '';
-                            }
-                        }
-                    }
-                } else {
-                    $gallery = $row->gallery;
-                    $gallerytitle = $row->gallerytitle;
-                }
-                $data->gallery = (object)array('images' => $gallery, 'title' => $gallerytitle);
-
-                if (preg_match('/.*:.*/i', $row->video, $match)) {
-                    for ($i = 0; $i < strlen($row->video); $i++) {
-                        if (substr($row->video, $i, 1) == ':') {
-                            $pos = $i;
-                            break;
-                        }
-                    }
-                    $data->video =(object)array('code' => substr($row->video, $pos + 1, strlen($row->video)),
-                                                'type' => substr($row->video, 0, $pos),
-                                                'title' => $row->videotitle,
-                                                'thumb' => $row->videothumb);
-
-                } else {
-                    $data->video = (object)array('code' => null, 'type' => 'default', 'title' => null, 'thumb' => null);
-                }
-
-                $data->type = strtolower($row->type);
-            }
-        }
-
-        return $data;
-    }
-
-    public function getListsFields()
-    {
-        if (JRequest::getCmd('return'))
-            $where = ' AND c.featured = 1';
-        else
-            $where = ' AND c.featured = 0';
-
-        $query = 'SELECT a.* FROM #__tz_pinboard_categories AS a'
-            . ' LEFT JOIN #__categories AS b ON a.catid = b.id'
-            . ' LEFT JOIN #__content AS c ON c.catid = b.id'
-            . ' WHERE c.id = ' . (int)JRequest::getCmd('id')
-            . $where;
-
-        $db = JFactory::getDbo();
-        $db->setQuery($query);
-        if (!$db->query()) {
-            $this->setError($db->getErrorMsg());
-            return false;
-        }
-        $rows = $db->loadObject();
-        $html = '';
-        if (count($rows) > 0)
-            $html = $this->renderFields($rows->groupid);
-
-        return $html;
-    }
-
-    function selectgroup()
-    {
-        $json = JRequest::getString('json2', null, null, 2);
-        $obj_json = json_decode($json);
-        $arr['data'] = $this->renderFields($obj_json->groupid, $obj_json->catid);
-        $arr['id'] = $obj_json->id;
-        $arr['catid'] = $obj_json->catid;
-        $arr['groupid'] = $obj_json->groupid;
-
-        return json_encode($arr);
-    }
 
     // Show tags
     public function getTags()
@@ -689,8 +595,6 @@ class TZ_PinboardModelArticle extends JModelAdmin
 
     public function getItem($pk = null)
     {
-
-
         if ($item = parent::getItem($pk)) {
 
             // Convert the params field to an array.
@@ -835,7 +739,7 @@ class TZ_PinboardModelArticle extends JModelAdmin
     function deleteImage($artId = null)
     {
 
-        $sizes = array('XS','S','M','L','XL');
+        $sizes = array('XS', 'S', 'M', 'L', 'XL');
         $query = 'SELECT * FROM #__tz_pinboard_xref_content'
             . ' WHERE contentid IN(' . implode(',', $artId) . ')';
         $db = JFactory::getDbo();
@@ -848,59 +752,32 @@ class TZ_PinboardModelArticle extends JModelAdmin
         if ($rows = $db->loadObjectList()) {
             foreach ($rows as $item) {
                 $path = null;
-                foreach ($sizes as $key => $size) {
-                    //Delete Image
-                    if (!empty($item->images)) {
-                        $str = str_replace('.' . JFile::getExt($item->images),
-                            '_' . $key . '.' . JFile::getExt($item->images), $item->images);
-                        $str = str_replace('/', DIRECTORY_SEPARATOR, $str);
-                        $path = JPATH_SITE . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $str);
-
+                if ($item->images && !empty($item->images)) {
+                    if (JFile::getExt($item->images) == "gif") {
+                        $path = JPATH_SITE . DIRECTORY_SEPARATOR . $item->images;
                         if (JFile::exists($path)) {
                             JFile::delete($path);
                         }
-                    }
+                    } else {
+                        foreach ($sizes as $key => $size) {
+                            //Delete Image
+                            $str = str_replace('.' . JFile::getExt($item->images),
+                                '_' . $size . '.' . JFile::getExt($item->images), $item->images);
+                            $str = str_replace('/', DIRECTORY_SEPARATOR, $str);
+                            $path = JPATH_SITE . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $str);
 
-                    //Delete Image Hover
-                    if (!empty($item->images_hover)) {
-                        $str4 = str_replace('.' . JFile::getExt($item->images_hover),
-                            '_' . $key . '.' . JFile::getExt($item->images_hover), $item->images_hover);
-                        $str4 = str_replace('/', DIRECTORY_SEPARATOR, $str4);
-                        $path4 = JPATH_SITE . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $str4);
-
-                        if (JFile::exists($path4)) {
-                            JFile::delete($path4);
-                        }
-                    }
-
-                    //Delete Image gallery
-                    if (!empty($item->gallery)) {
-                        $gallerys = explode('///', $item->gallery);
-                        foreach ($gallerys as $gallery) {
-                            $str2 = str_replace('.' . JFile::getExt($gallery),
-                                '_' . $key . '.' . JFile::getExt($gallery), $gallery);
-                            $path2 = JPATH_SITE . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $str2);
-                            if (JFile::exists($path2)) {
-                                JFile::delete($path2);
+                            if (JFile::exists($path)) {
+                                JFile::delete($path);
                             }
-                        }
-                    }
-
-                    //Delete video thumb
-                    if (!empty($item->videothumb)) {
-                        $str3 = str_replace('.' . JFile::getExt($item->videothumb),
-                            '_' . $key . '.' . JFile::getExt($item->videothumb), $item->videothumb);
-                        $path3 = JPATH_SITE . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $str3);
-                        if (JFile::exists($path3)) {
-                            JFile::delete($path3);
                         }
                     }
                 }
             }
+            return true;
         }
     }
 
-    public function delete(&$pks)
+    public function delete($pks)
     {
 
         if ($pks) {
@@ -915,7 +792,12 @@ class TZ_PinboardModelArticle extends JModelAdmin
                 $db->setQuery($sql);
                 $db->query();
             }
-            $this->deleteImage($pks);
+
+            $deleteImage = $this->deleteImage($pks);
+            if ($deleteImage == false) {
+                $this->setError("COM_TZ_PINBOARD_ERROR_DELETE_IMAGE_LABEL");
+                return false;
+            }
 
             foreach ($pks as $item) {
                 $this->removeAllAttach($item, 'media');
@@ -926,91 +808,44 @@ class TZ_PinboardModelArticle extends JModelAdmin
                     $this->setError($db->getErrorMsg());
                     return false;
                 }
-                $query = 'DELETE FROM #__tz_pinboard_xref_content'
+                $query1 = 'DELETE FROM #__tz_pinboard_xref_content'
                     . ' WHERE contentid = ' . $item;
-                $db->setQuery($query);
-                if (!$db->query()) {
-                    $this->setError($db->getErrorMsg());
-                    return false;
-                }
-                $query = 'DELETE FROM #__tz_pinboard_website'
-                    . ' WHERE contentid = ' . $item;
-                $db->setQuery($query);
+                $db->setQuery($query1);
                 if (!$db->query()) {
                     $this->setError($db->getErrorMsg());
                     return false;
                 }
 
-                $query = 'DELETE FROM #__tz_pinboard'
+                $query2 = 'DELETE FROM #__tz_pinboard_website'
                     . ' WHERE contentid = ' . $item;
-                $db->setQuery($query);
+                $db->setQuery($query2);
                 if (!$db->query()) {
                     $this->setError($db->getErrorMsg());
                     return false;
                 }
+
+                $query3 = 'DELETE FROM #__tz_pinboard'
+                    . ' WHERE contentid = ' . $item;
+                $db->setQuery($query3);
+                if (!$db->query()) {
+                    $this->setError($db->getErrorMsg());
+                    return false;
+                }
+
             }
 
             $this->deleteTags($pks);
 
-
-        }
-        // parent::delete($pks);
-
-    }
-
-    function deleteThumb($articleId = null, $file = null)
-    {
-        $size = $this->getState('size');
-        if ($file) {
-            foreach ($size as $key => $val) {
-                $url = str_replace('.' . JFile::getExt($file), '_' . $key . '.' . JFile::getExt($file), $file);
-                $url = str_replace('/', DIRECTORY_SEPARATOR, $url);
-                $path = JPATH_SITE . DIRECTORY_SEPARATOR . $url;
-                if (JFile::exists($path)) {
-                    JFile::delete($path);
-                }
-            }
-
-            if (JFile::exists($path)) {
-                JFile::delete($path);
-            }
-        } else {
-            if ($articleId) {
-                $where = ' WHERE contentid =' . (int)$articleId;
-            }
-            $query = 'SELECT videothumb FROM #__tz_pinboard_xref_content'
-                . $where;
-            $db = JFactory::getDbo();
-            $db->setQuery($query);
-            if (!$db->query()) {
-                echo $db->getErrorMsg();
-                die();
-            }
-            if ($row = $db->loadObject()) {
-                if (!empty($row->videothumb)) {
-                    $file = JPATH_SITE . DIRECTORY_SEPARATOR . $row->videothumb;
-
-                    foreach ($size as $key => $val) {
-                        $url = str_replace('.' . JFile::getExt($file), '_' . $key . '.' . JFile::getExt($file), $file);
-                        $url = str_replace('/', DIRECTORY_SEPARATOR, $url);
-                        if (JFile::exists($url)) {
-                            JFile::delete($url);
-                        }
-                    }
-                }
-            }
+            return true;
         }
 
     }
 
     function getWeb()
     {
-
-
         $db = JFactory::getDbo();
 
         if (JRequest::getCmd('task') == "article.save2copy") {
-
 
             $sql_pin = "select id from #__tz_pinboard_pins order by id desc limit 0,1";
             $db->setQuery($sql_pin);
@@ -1049,374 +884,6 @@ class TZ_PinboardModelArticle extends JModelAdmin
         }
     }
 
-    function _save($task = null)
-    {
-
-        // Clean the cache.
-        $this->cleanCache();
-        $params = $this->getState('params');
-
-        $post = JRequest::get('post');
-
-        $typeOfMedia = JRequest::getString('type_of_media');
-
-        $groupid = $post['groupid'];
-        $bool = 0;
-
-
-        // if(isset($groupid)){
-
-        //$data       = JRequest::getVar('jform',array(),'post','array');
-        $textarea = JRequest::getVar('tz_textarea_hidden', array(), 'post', 'array');
-
-        if ($textarea) {
-            foreach ($textarea as $item) {
-                $post['tzfields' . $item] = JRequest::getVar('tzfields' . $item, '', 'post', 'string', JREQUEST_ALLOWRAW);
-            }
-        }
-
-        // get link with fields link
-        $link = JRequest::getVar('tz_link_hidden', array(), 'post', 'array');
-        if ($link) {
-            foreach ($link as $item) {
-                $arr = JRequest::getVar('tzfields' . $item, array(), 'post', 'array');
-
-                // set value
-                if (!empty($arr[0]))
-                    $post['tzfields' . $item] = array(htmlentities('<a href="' . $arr[1]
-                        . '" target="' . $arr[2] . '">' . $arr[0] . '</a>'));
-                else
-                    $post['tzfields' . $item] = array(htmlentities('<a href="' . $arr[1]
-                        . '" target="' . $arr[2] . '">' . $arr[1] . '</a>'));
-            }
-        }
-
-        // Create folder
-        // Check folder
-        $destPath = JPATH_SITE . '/' . $this->imageUrl;
-
-        if (!JFolder::exists($destPath)) {
-            JFolder::create($destPath);
-
-        }
-        if (!JFile::exists($destPath . '/index.html')) {
-
-            JFile::write($destPath . '/index.html', htmlspecialchars_decode('<!DOCTYPE html><title></title>'));
-        }
-
-        // Store image
-        $imageUpload = array('images' => '', 'imagetitle' => '');
-
-        // Store attachments
-        $attachFile = JRequest::getVar('tz_attachments_file', '', 'files', 'array');
-        $attachHiddenFile = JRequest::getVar('tz_attachments_hidden_file', array(), 'post', 'array');
-        $attachHiddenTitle = JRequest::getVar('tz_attachments_hidden_title', array(), 'post', 'array');
-        $attachHiddenOld = JRequest::getVar('tz_attachments_hidden_old', array(), 'post', 'array');
-
-        $attachTitle = JRequest::getVar('tz_attachments_title', array(), 'post', 'array');
-
-        $attachFileName = array();
-        $attachFileTitle = array();
-
-        if ($attachFile) {
-            if (count($attachFile) > 0) {
-                $tzfolderPath = JPATH_SITE . DIRECTORY_SEPARATOR . 'media' . DIRECTORY_SEPARATOR . $this->tzfolder;
-                $attachFolderPath = JPATH_SITE . DIRECTORY_SEPARATOR . 'media' . DIRECTORY_SEPARATOR . $this->tzfolder . DIRECTORY_SEPARATOR . $this->attachUrl;
-
-                if (!JFolder::exists($tzfolderPath)) {
-                    JFolder::create($tzfolderPath);
-                    JFile::write($tzfolderPath . DIRECTORY_SEPARATOR . 'index.html', htmlspecialchars_decode('<!DOCTYPE html><title></title>'));
-                }
-                if (!JFolder::exists($attachFolderPath)) {
-                    JFolder::create($attachFolderPath);
-                    JFile::copy($tzfolderPath . DIRECTORY_SEPARATOR . 'index.html', $attachFolderPath . DIRECTORY_SEPARATOR . 'index.html');
-                }
-                $total = count($attachFile) + count($attachHiddenFile);
-
-                if (count($attachHiddenFile) > 0) {
-                    $i = 0;
-                    foreach ($attachHiddenFile as $i => $item) {
-                        $type = '.' . JFile::getExt($item);
-                        $attachOld[] = $attachHiddenOld[$i];
-
-                        if ($task == 'save2copy') {
-                            $fileName = $item;
-                        } else {
-                            if (JRequest::getVar('task') == 'save2copy')
-                                $fileName = uniqid() . 'tz_pinboard_' . (time() + $i) . $type;
-                            else
-                                $fileName = $item;
-                        }
-
-                        $srcPath = $attachFolderPath . DIRECTORY_SEPARATOR . $item;
-                        $destPath = $attachFolderPath . DIRECTORY_SEPARATOR . $fileName;
-
-                        $attachFileName[] = $this->tzfolder . '/' . $this->attachUrl . '/' . $fileName;
-
-                        if (!empty($attachHiddenTitle[$i]))
-                            $attachFileTitle[] = $attachHiddenTitle[$i];
-                        else
-                            $attachFileTitle[] = '';
-                        //                                    $attachFileTitle[]  = $fileName;
-
-                        if ($task != 'save2copy') {
-                            if (!JFile::exists($destPath))
-                                JFile::copy($srcPath, $destPath);
-                        }
-
-                        $i++;
-                    }
-                }
-
-                $err = array();
-                $count = 0;
-
-                if (isset($attachFile['name']) && count($attachFile['name']) > 0) {
-                    $i = 0;
-                    foreach ($attachFile['name'] as $item) {
-                        if (!empty($item)) {
-                            // Check file size
-                            $type = JFile::getExt($item);
-                            $listType = explode(',', $params->get('tz_attach_type'));
-
-                            if (!in_array($type, $listType)) {
-                                $this->setError('Unsupported this media type');
-                                return false;
-                            } else {
-                                if ($attachFile['size'][$i] <= (100 * 1024 * 1024)) {
-
-                                    $type = '.' . $type;
-                                    $attachOld[] = $attachFile['name'][$i];
-
-                                    if ($task == 'save2copy')
-                                        $fileName = uniqid() . 'tz_pinboard_' . (time() + count($attachHiddenFile) + $i) . $type;
-                                    else
-                                        $fileName = uniqid() . 'tz_pinboard_' . (time() + $i + count($attachHiddenFile) + count($attachFile)) . $type;
-                                    $destPath = $attachFolderPath . DIRECTORY_SEPARATOR . $fileName;
-
-                                    $attachFileName[] = $this->tzfolder . '/' . $this->attachUrl . '/' . $fileName;
-
-                                    if (!empty($attachTitle[$i]))
-                                        $attachFileTitle[] = $attachTitle[$i];
-                                    else
-                                        $attachFileTitle[] = '';
-                                    //                                                $attachFileTitle[]  = $fileName;
-
-                                    if (!JFile::exists($destPath))
-                                        JFile::copy($attachFile['tmp_name'][$i], $destPath);
-
-                                } else {
-                                    $err[] = $attachFile['name'][$i];
-                                    $count++;
-                                }
-                            }
-                        }
-                        $i++;
-                    }
-                    if (count($err) > 0) {
-                        $err = implode(',', $err);
-                        $this->setError($count . ' files: "' . $err . '" size too large');
-                        return false;
-                    }
-                }
-
-            }
-        }
-
-        /////////////////////////////////////////////
-
-        $tzFields = array();
-
-        // get fields id from fields name
-        $m = 0;
-        foreach ($post as $key => $val) {
-            if (preg_match('/tzfields.*/i', $key, $match) == 1) {
-
-                $fieldsid = str_replace('tzfields', '', $key);
-
-                // Get value extra fields
-                if ($fieldsid) {
-                    if (is_array($val)) {
-
-                        foreach ($val as $i => $row) {
-
-                            if (preg_match('/(@\[\{\(\&\*\_)[0-9]$/', $row, $match2)) {
-                                $stt = str_replace($match2[1], '', $match2[0]);
-                                $optionField = $this->getOptionField($fieldsid, $stt);
-                            } else {
-                                $optionField = $this->getOptionField($fieldsid, 0);
-                            }
-
-                            if (!empty($row)) {
-
-                                if (preg_match('/(@\[\{\(\&\*\_)[0-9]$/', $row, $match2)) {
-                                    $tzFields[] = '(' . $this->getState($this->getName() . '.id') . ','
-                                        . $fieldsid . ',\'' . str_replace($match2[0], '', $row) . '\',\'' . $optionField->image . '\')';
-                                } else
-                                    $tzFields[] = '(' . $this->getState($this->getName() . '.id') . ','
-                                        . $fieldsid . ',\'' . (string)$row . '\',\'' . $optionField->image . '\')';
-
-                            }
-                        }
-                    } else {
-                        if (!empty($val)) {
-                            if (preg_match('/(@\[\{\(\&\*\_)[0-9]$/', $val, $match2)) {
-                                $stt = str_replace('@[{(&*_', '', $match2[0]);
-                                $optionField = $this->getOptionField($fieldsid, $stt);
-
-                                $tzFields[] = '(' . $this->getState($this->getName() . '.id')
-                                    . ',' . $fieldsid . ',\'' . str_replace($match2[0], '', $val) . '\',\'' . $optionField->image . '\')';
-                            } else {
-                                $optionField = $this->getOptionField($fieldsid, 0);
-                                if ($optionField) {
-                                    $tzFields[] = '(' . $this->getState($this->getName() . '.id')
-                                        . ',' . $fieldsid . ',\'' . (string)$val . '\',\'' . $optionField->image . '\')';
-                                } else {
-                                    $tzFields[] = '(' . $this->getState($this->getName() . '.id')
-                                        . ',' . $fieldsid . ',\'' . (string)$val . '\',\'\')';
-                                }
-                            }
-                        }
-
-                    }
-                }
-            }
-            $m++;
-        }
-
-        $db = JFactory::getDbo();
-
-        // Store fields group
-        $attachFileName = implode('///', $attachFileName);
-        $attachFileTitle = implode('///', $attachFileTitle);
-
-        $fileHover = JRequest::getVar('tz_img_hover', '', 'files', 'array');
-
-        $file = JRequest::getVar('tz_img', '', 'files', 'array');
-
-        $file2 = JRequest::getVar('tz_img_client', '', 'files', 'array');
-        $images = $this->getImage($file, $post, $task);
-
-        $value['groupid'] = 0;
-        $value['contentid'] = $this->getState($this->getName() . '.id');
-
-        $value['images'] = '"' . $images->name . '"';
-        $value['imagetitle'] = '"' . $images->title . '"';
-        $gallery = $this->getGallery($file2, $post, $params, $task);
-
-
-        $value['images_hover'] = '"' . $this->getImageHover($fileHover, $post['tz_img_hover_server'], $post, $task) . '"';
-
-        $value['gallery'] = '"' . $gallery->name . '"';
-        $value['gallerytitle'] = '"' . $gallery->title . '"';
-
-        $video = $this->getVideo($post, $task);
-
-        $value['video'] = $db->quote($video->name);
-        $value['videotitle'] = '"' . $video->title . '"';
-
-        $value['attachfiles'] = '"' . $attachFileName . '"';
-        $value['attachtitle'] = '"' . $attachFileTitle . '"';
-        $value['attachold'] = '"' . implode('///', $attachOld) . '"';
-
-        $value['videothumb'] = $db->quote($video->thumb);
-
-
-        $value['type'] = '"' . $typeOfMedia . '"';
-        $value = '(' . implode(',', $value) . ')';
-
-        $query = 'DELETE FROM #__tz_pinboard_xref_content WHERE contentid = ' . $this->getState($this->getName() . '.id');
-        $db->setQuery($query);
-
-        if (!$db->query()) {
-            $this->setError($db->getErrorMsg());
-            return false;
-        }
-
-        $query = 'INSERT INTO `#__tz_pinboard_xref_content`'
-            . '(`groupid`,`contentid`,`images`,`imagetitle`,`images_hover`,`gallery`,`gallerytitle`,'
-            . '`video`,`videotitle`,`attachfiles`,`attachtitle`,`attachold`,`videothumb`,`type`)'
-            . ' VALUES ' . $value;
-        $db->setQuery($query);
-        if (!$db->query()) {
-            $this->setError($db->getErrorMsg());
-            return false;
-        }
-        // Store Tz fields
-        $query = 'DELETE FROM #__tz_pinboard WHERE contentid = ' . $this->getState($this->getName() . '.id');
-        $db->setQuery($query);
-
-        if (!$db->query()) {
-            $this->setError($db->getErrorMsg());
-            return false;
-        }
-
-        if (!empty($tzFields)) {
-            $tzFields = (count($tzFields) > 0) ? implode(',', $tzFields) : '(\'\',\'\',\'\')';
-
-            $query = 'INSERT INTO #__tz_pinboard(`contentid`,`fieldsid`,`value`,`images`)'
-                . ' VALUES' . $tzFields;
-
-            $db->setQuery($query);
-
-            if (!$db->query()) {
-                $this->setError($db->getErrorMsg());
-                return false;
-            }
-        }
-        // Tags
-        $this->_saveTags($this->getState($this->getName() . '.id'), $post['tz_tags']);
-
-        return true;
-
-    }
-
-    /**
-     * Method to save the form data.
-     *
-     * @param    array    The form data.
-     *
-     * @return    boolean    True on success.
-     * @since    1.6
-     */
-    public function save($data)
-    {
-
-        if (isset($data['images']) && is_array($data['images'])) {
-            $registry = new JRegistry;
-
-            $registry->loadArray($data['images']);
-            $data['images'] = (string)$registry;
-
-        }
-
-        if (isset($data['urls']) && is_array($data['urls'])) {
-            $registry = new JRegistry;
-            $registry->loadArray($data['urls']);
-            $data['urls'] = (string)$registry;
-
-        }
-
-
-        // Alter the title for save as copy
-        if (JRequest::getVar('task') == 'save2copy') {
-            list($title, $alias) = $this->generateNewTitle($data['catid'], $data['alias'], $data['title']);
-
-            $this->_save(JRequest::getVar('task'));
-
-            $data['id'] = 0;
-
-            $data['title'] = $title;
-            $data['alias'] = $alias;
-
-        }
-        $post = JRequest::get('post');
-        if (parent::save($data)) {
-            return true;
-        }
-
-        return false;
-    }
 
     protected function cleanCache($group = null, $client_id = 0)
     {

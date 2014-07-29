@@ -29,11 +29,9 @@ class TZ_PinboardModelComment extends JModelList
             $this->context .= '.' . $layout;
         }
 
-
         $filer_auto = $this->getUserStateFromRequest($this->context . '.filter.author.id', 'filter_author_id', '');
         $filer_search = $this->getUserStateFromRequest($this->context . '.filler.search', 'filter_search', '');
         $filer_state = $this->getUserStateFromRequest($this->context . '.filter_published', 'filter_published', '');
-
         $filer_auto = $this->getUserStateFromRequest($this->context . '.filter.author.id', 'filter_author_id', '');
         $filert_order = $this->getUserStateFromRequest($this->context . '.filter.order', 'filter_order', '');
         $filert_order_dir = $this->getUserStateFromRequest($this->context . '.filert.order.dir', 'filter_order_Dir', '');

@@ -160,8 +160,7 @@ jimport('joomla.html');
 </div>
 <div id="tz_conten_board">
 <div id="tz_conten_board_1">
-    <?php
-    if (isset($this->Boarpin)) {
+    <?php if (isset($this->Boarpin)) {
         foreach ($this->Boarpin as $rowname) {
             ?>
             <div class="tz_conten_board_class">
@@ -172,9 +171,7 @@ jimport('joomla.html');
                             <?php echo $rowname->name_board; ?>
                         </a>
                             <span>
-                                <?php
-                                echo $rowname->countpins->numberpin;
-                                ?>
+                                <?php echo $rowname->countpins->numberpin; ?>
                                 <?php echo JText::_('COM_TZ_PINBOARD_SUBMENU_PINS_NUMBER'); ?>
                             </span>
                     </h6>
@@ -185,17 +182,15 @@ jimport('joomla.html');
                                 <?php if (!empty($rowname->pins)) {
                                     $img_size = $this->img_size;
                                     $img_type = JFile::getExt($rowname->pins[0]->img);
-									 if ($img_type == 'gif') {
+                                    if ($img_type == 'gif') {
                                         $img_type_replaca = $rowname->pins[0]->img;
                                     } else {
                                         $img_type_replaca = str_replace(".$img_type", "_$img_size.$img_type", $rowname->pins[0]->img);
-                                    }                                    
+                                    }
                                     ?>
                                     <img id="tz_pin_more_warp_name_img"
                                          src="<?php echo JUri::root() . '/' . $img_type_replaca ?>" alt="">
-                                <?php
-                                }
-                                ?>
+                                <?php } ?>
                             </li>
                             <li class="tz_conten_board_firs_3">
                                 <?php
@@ -207,47 +202,32 @@ jimport('joomla.html');
                                         $img_type_replaca = $rowname->pins[$i]->img;
                                     } else {
                                         $img_type_replaca = str_replace(".$img_type", "_$img_size.$img_type", $rowname->pins[$i]->img);
-                                    }
-
-                                    ?>
+                                    }?>
                                     <a>
                                         <img src="<?php echo JUri::root() . '/' . $img_type_replaca ?>" alt="">
                                     </a>
                                 <?php } ?>
                                 <div class="cler"></div>
                             </li>
-                            <?php
-                            if ($rowname->created_user_id == $this->sosanhuser) {
-                                ?>
+                            <?php if ($rowname->created_user_id == $this->sosanhuser) { ?>
                                 <li class="tz_conten_board_firs_4">
-
                                     <a href="<?php echo JRoute::_('index.php?option=com_tz_pinboard&view=manageruser&task=tz.edit&id_board=' . $rowname->id_board); ?>"
                                        rel="nofollow">
-
                                         <?php echo JText::_('COM_TZ_PINBOARD_MANAGERUSER_EDITS'); ?>
-
                                     </a>
-
                                 </li>
-                            <?php
-                            }
-
-                            ?>
+                            <?php } ?>
                         </ul>
-
                     </div>
                 </div>
             </div>
         <?php
-
         }
     }
     ?>
     <?php if (isset($this->newboard) && $this->newboard == $this->sosanhuser) { ?>
         <div id="Tz_board_new" class="tz_conten_board_class">
-            <div id="Tz_create_boar_new">
-
-            </div>
+            <div id="Tz_create_boar_new"></div>
         </div>
     <?php } ?>
     <div class="cler"></div>
@@ -260,9 +240,9 @@ jimport('joomla.html');
 
 <div id="tz_user_information">
     <h6 id="tz_title_info">
-                    <span class="tz_info_span btn btn-large ">
-                        <?php echo JText::_('COM_TZ_PINBOARD_MANAGERUSER_INFORMATION'); ?>
-                    </span>
+        <span class="tz_info_span btn btn-large ">
+            <?php echo JText::_('COM_TZ_PINBOARD_MANAGERUSER_INFORMATION'); ?>
+        </span>
     </h6>
 
     <div id="tz_uset_info">
@@ -279,23 +259,21 @@ jimport('joomla.html');
 
         <div id="tz_information_right">
             <p class="tz_info_name">
-                            <span>
-                                <?php echo JText::_('COM_TZ_PINBOARD_MANAGERUSER_NAME_USER'); ?>
-                            </span>
+                <span>
+                    <?php echo JText::_('COM_TZ_PINBOARD_MANAGERUSER_NAME_USER'); ?>
+                </span>
                 <a>
-                    <?php
-                    if (isset($this->userInfo->uname)) {
+                    <?php if (isset($this->userInfo->uname)) {
                         echo $this->userInfo->uname;
-                    }
-                    ?>
+                    }?>
                 </a>
 
             <p class="cler"></p>
             </p>
             <p class="tz_info_name">
-                            <span>
-                                <?php echo JText::_('COM_TZ_PINBOARD_MANAGERUSER_EMAIL_USER'); ?>
-                            </span>
+                <span>
+                    <?php echo JText::_('COM_TZ_PINBOARD_MANAGERUSER_EMAIL_USER'); ?>
+                </span>
                 <a>
                     <?php
                     if (isset($this->userInfo->uemail)) {
@@ -307,9 +285,9 @@ jimport('joomla.html');
             <p class="cler"></p>
             </p>
             <p class="tz_info_name">
-                            <span>
-                                <?php echo JText::_('COM_TZ_PINBOARD_MANAGERUSER_DATE_USER'); ?>
-                            </span>
+                <span>
+                    <?php echo JText::_('COM_TZ_PINBOARD_MANAGERUSER_DATE_USER'); ?>
+                </span>
                 <a>
                     <?php
                     if (isset($this->userInfo->udate)) {
@@ -365,10 +343,8 @@ jimport('joomla.html');
                             <?php echo JText::_('COM_TZ_PINBOARD_MANAGERUSER_CHANGE_ACCOUNT'); ?>
                         </a>
                     </p>
-                <?php
-                }
-            }
-            ?>
+                <?php } ?>
+            <?php } ?>
         </div>
         <div class="cler"></div>
     </div>
@@ -438,15 +414,12 @@ jimport('joomla.html');
                 <?php echo JHtml::_('form.token'); ?>
             </div>
         </form>
-
     </div>
 
     <div id="notice_top">
         <span><?php echo JText::_('COM_TZ_PINBOARD_THANKS_YOU'); ?><span>
     </div>
-    <div id="notice_bottom">
-
-    </div>
+    <div id="notice_bottom"></div>
 </div>
 
 </div>
