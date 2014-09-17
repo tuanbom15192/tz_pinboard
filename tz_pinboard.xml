@@ -7,7 +7,7 @@
 	<license>GNU/GPL v2 or later http://www.gnu.org/licenses/gpl-2.0.html</license>
 	<authorEmail>tunn@templaza.com</authorEmail>
 	<authorUrl>www.templaza.com/</authorUrl>
-	<version>3.3.2</version>
+	<version>3.3.3</version>
 	<description>TZ Pinboard native for Joomla! 3.0.x</description>
     <installfile>install.tz_pinboard.php</installfile>
     <uninstallfile>uninstall.tz_pinboard.php</uninstallfile>
@@ -42,6 +42,7 @@
           <language tag="en-GB">en-GB/en-GB.com_tz_pinboard.ini</language>
 		  <language tag="ru-RU">ru-RU/ru-RU.com_tz_pinboard.ini</language>
 		  <language tag="es-ES">es-ES/es-ES.com_tz_pinboard.ini</language>
+		  <language tag="fr-FR">fr-FR/fr-FR.com_tz_pinboard.ini</language>
     </languages>
 
 	<administration>
